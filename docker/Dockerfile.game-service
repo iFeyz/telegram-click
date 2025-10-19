@@ -1,0 +1,23 @@
+# Optimized Dockerfile - uses pre-built Linux binary
+# Build the binary first: ./scripts/build-linux.sh release
+FROM debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && \
+    apt-get install -y ca-certificates netcat-openbsd curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the pre-built binary
+COPY target/linux-deploy/game-service /usr/local/bin/game-service
+
+# Make it executable
+RUN chmod +x /usr/local/bin/game-service
+
+# Set environment
+ENV RUST_LOG=info
+
+# Expose gRPC port
+EXPOSE 50051
+
+# Run the service
+CMD ["game-service"]

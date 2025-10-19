@@ -1,0 +1,51 @@
+[package]
+name = "game-service"
+version.workspace = true
+edition = "2021"
+
+[lib]
+name = "game_service"
+path = "src/lib.rs"
+
+[dependencies]
+# Shared library
+shared = { path = "../shared" }
+
+# Async runtime
+tokio = { workspace = true }
+futures = { workspace = true }
+
+# gRPC
+tonic = { workspace = true }
+prost = { workspace = true }
+prost-types = { workspace = true }
+
+# Database
+sqlx = { workspace = true }
+redis = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# Utilities
+uuid = { workspace = true }
+chrono = { workspace = true }
+dotenv = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# OpenSSL (for cross-compilation)
+openssl = { workspace = true, optional = true }
+
+[features]
+vendored = ["openssl"]
+
+[build-dependencies]
+tonic-prost-build = "0.14"

@@ -1,0 +1,86 @@
+# Ignore everything except the pre-built binaries and necessary runtime files
+# This significantly speeds up Docker builds by reducing context size
+
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Build artifacts (except linux-deploy)
+target/debug
+target/release
+target/x86_64-apple-darwin
+target/x86_64-unknown-linux-gnu
+# Keep: target/linux-deploy/ and target/x86_64-unknown-linux-musl/
+
+# Rust source (not needed since we use pre-built binaries)
+bot-service/src
+bot-service/Cargo.toml
+game-service/src
+game-service/Cargo.toml
+leaderboard-service/src
+leaderboard-service/Cargo.toml
+benchmark-suite/src
+benchmark-suite/Cargo.toml
+shared/src
+shared/Cargo.toml
+Cargo.toml
+Cargo.lock
+
+# Proto files (not needed at runtime)
+proto
+
+# Node modules and frontend
+mini-app/node_modules
+mini-app/src
+mini-app/*.json
+mini-app/*.config.*
+# Keep: mini-app/dist
+
+# Scripts and docs
+scripts
+docs
+*.md
+!README.md
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs and temp files
+*.log
+logs
+tmp
+temp
+
+# Database files
+*.db
+*.sqlite
+
+# Docker files (we only need the Dockerfiles we're building)
+docker-compose*.yml
+!docker-compose.yml
+!docker-compose.scaled.yml
+
+# Test and benchmark files
+tests
+k6-scripts
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Coverage and profiling
+coverage
+*.profraw
+*.profdata

@@ -1,0 +1,23 @@
+# Optimized Dockerfile - uses pre-built Linux binary
+# Build the binary first: ./scripts/build-linux.sh release
+FROM debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && \
+    apt-get install -y ca-certificates netcat-openbsd && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the pre-built binary
+COPY target/linux-deploy/leaderboard-service /usr/local/bin/leaderboard-service
+
+# Make it executable
+RUN chmod +x /usr/local/bin/leaderboard-service
+
+# Set environment
+ENV RUST_LOG=info
+
+# Expose gRPC port
+EXPOSE 50052
+
+# Run the service
+CMD ["leaderboard-service"]

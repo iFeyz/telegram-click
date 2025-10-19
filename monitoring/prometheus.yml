@@ -1,0 +1,57 @@
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'clickgame-monitor'
+
+scrape_configs:
+
+  - job_name: 'bot-service'
+    static_configs:
+      - targets:
+          - 'bot-service-1:9091'
+          - 'bot-service-2:9091'
+          - 'bot-service-3:9091'
+          - 'bot-service-4:9091'
+          - 'bot-service-5:9091'
+        labels:
+          service: 'bot-service'
+
+
+  - job_name: 'game-service'
+    static_configs:
+      - targets:
+          - 'game-service-1:9092'
+          - 'game-service-2:9092'
+          - 'game-service-3:9092'
+        labels:
+          service: 'game-service'
+
+
+  - job_name: 'leaderboard-service'
+    static_configs:
+      - targets:
+          - 'leaderboard-service-1:9093'
+          - 'leaderboard-service-2:9093'
+        labels:
+          service: 'leaderboard-service'
+
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          service: 'redis'
+
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          service: 'postgres'
+
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

@@ -1,0 +1,23 @@
+# Optimized Dockerfile - uses pre-built Linux binary
+# Build the binary first: ./scripts/build-linux.sh release
+FROM debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && \
+    apt-get install -y ca-certificates netcat-openbsd curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the pre-built binary
+COPY target/linux-deploy/bot-service /usr/local/bin/bot-service
+
+# Make it executable
+RUN chmod +x /usr/local/bin/bot-service
+
+# Set environment
+ENV RUST_LOG=info
+
+# Expose WebSocket/HTTP port
+EXPOSE 8080
+
+# Run the service
+CMD ["bot-service"]

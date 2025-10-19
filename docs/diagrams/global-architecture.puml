@@ -1,0 +1,61 @@
+@startuml component-architecture
+title Bitcoin Clicker - Component Architecture
+
+actor Telegram
+
+rectangle "Nginx Load Balancer" as nginx
+
+rectangle "Bot Services (x5)" as bot_services {
+  component BS1
+  component BS2
+  component BS3
+  component BS4
+  component BS5
+}
+
+rectangle "Game Services (x3)" as game_services {
+  component "GS1\n(Shard 0)" as GS1
+  component "GS2\n(Shard 1)" as GS2
+  component "GS3\n(Shard 2)" as GS3
+}
+
+rectangle "Leaderboard Services (x2)" as lb_services {
+  component "LS1\n(Refresh)" as LS1
+  component "LS2\n(Read)" as LS2
+}
+
+database PostgreSQL
+database Redis
+component PgBouncer
+
+Telegram --> nginx
+nginx --> BS1
+nginx --> BS2
+nginx --> BS3
+nginx --> BS4
+nginx --> BS5
+
+nginx --> GS1
+nginx --> GS2
+nginx --> GS3
+
+nginx --> LS1
+nginx --> LS2
+
+BS1 --> GS1
+BS1 --> LS1
+
+GS1 --> PgBouncer
+GS2 --> PgBouncer
+GS3 --> PgBouncer
+PgBouncer --> PostgreSQL
+
+LS1 --> PostgreSQL
+LS2 --> PostgreSQL
+
+GS1 --> Redis
+GS2 --> Redis
+GS3 --> Redis
+
+@enduml
+

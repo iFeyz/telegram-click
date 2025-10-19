@@ -1,0 +1,690 @@
+version: '3.8'
+
+
+
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    platform: linux/amd64  
+    container_name: clickgame-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=clickgame
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c max_connections=1000
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d clickgame"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    platform: linux/amd64
+    container_name: clickgame-pgbouncer
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=clickgame
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=3000
+      - DEFAULT_POOL_SIZE=150
+      - MAX_DB_CONNECTIONS=200
+      - RESERVE_POOL_SIZE=75
+      - SERVER_RESET_QUERY=DISCARD ALL
+      - ADMIN_USERS=postgres
+      - STATS_USERS=postgres
+      - AUTH_TYPE=plain
+      - AUTH_QUERY=SELECT usename, passwd FROM pg_shadow WHERE usename=$1
+    ports:
+      - "6432:5432"  
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "localhost", "-U", "postgres", "-d", "clickgame"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  redis:
+    image: redis:7-alpine
+    platform: linux/amd64  
+    container_name: clickgame-redis
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  game-service-1:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.game-service
+    platform: linux/amd64  
+    container_name: clickgame-game-1
+    environment:
+      - DATABASE_URL=postgres://postgres:password@pgbouncer:5432/clickgame
+      - REDIS_URL=redis://redis:6379
+      - GRPC_PORT=50051
+      - CLICK_RATE_LIMIT=10
+      - SESSION_TIMEOUT_SECS=300
+      - CLICK_FLUSH_INTERVAL_MS=1000
+      - INSTANCE_ID=game-1
+      - NUM_SHARDS=3
+      - RUN_MIGRATIONS=true
+      - RUST_LOG=info,game_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9092
+    ports:
+      - "9092:9092"  
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "50051"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  game-service-2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.game-service
+    platform: linux/amd64  
+    container_name: clickgame-game-2
+    environment:
+      - DATABASE_URL=postgres://postgres:password@pgbouncer:5432/clickgame
+      - REDIS_URL=redis://redis:6379
+      - GRPC_PORT=50051
+      - CLICK_RATE_LIMIT=10
+      - SESSION_TIMEOUT_SECS=300
+      - CLICK_FLUSH_INTERVAL_MS=1000
+      - INSTANCE_ID=game-2
+      - NUM_SHARDS=3
+      - RUN_MIGRATIONS=false
+      - RUST_LOG=info,game_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9092
+    ports:
+      - "9192:9092"  
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "50051"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  game-service-3:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.game-service
+    platform: linux/amd64  
+    container_name: clickgame-game-3
+    ports:
+      - "9292:9092"  
+    environment:
+      - DATABASE_URL=postgres://postgres:password@pgbouncer:5432/clickgame
+      - REDIS_URL=redis://redis:6379
+      - GRPC_PORT=50051
+      - CLICK_RATE_LIMIT=10
+      - SESSION_TIMEOUT_SECS=300
+      - CLICK_FLUSH_INTERVAL_MS=1000
+      - INSTANCE_ID=game-3
+      - NUM_SHARDS=3
+      - RUN_MIGRATIONS=false
+      - RUST_LOG=info,game_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9092
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "50051"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  leaderboard-service-1:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.leaderboard-service
+    platform: linux/amd64  
+    container_name: clickgame-leaderboard-1
+    environment:
+      - DATABASE_URL=postgres://postgres:password@pgbouncer:5432/clickgame
+      - REDIS_URL=redis://redis:6379
+      - GRPC_PORT=50052
+      - INSTANCE_ID=leaderboard-1
+      - LEADERBOARD_REFRESH_INTERVAL_MS=5000
+      - RUST_LOG=info,leaderboard_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9093
+    ports:
+      - "9093:9093"  
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "50052"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  leaderboard-service-2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.leaderboard-service
+    platform: linux/amd64  
+    container_name: clickgame-leaderboard-2
+    environment:
+      - DATABASE_URL=postgres://postgres:password@pgbouncer:5432/clickgame
+      - REDIS_URL=redis://redis:6379
+      - GRPC_PORT=50052
+      - INSTANCE_ID=leaderboard-2
+      - ENABLE_CACHE_REFRESH=false
+      - RUST_LOG=info,leaderboard_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9093
+    ports:
+      - "9193:9093"  
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "50052"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  bot-service-1:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.bot-service
+    platform: linux/amd64  
+    container_name: clickgame-bot-1
+    environment:
+      - TELOXIDE_TOKEN=${TELOXIDE_TOKEN}
+      - ENABLE_TELEGRAM_POLLING=true  
+      - GAME_SERVICE_URL=http://game-service-1:50051
+      - LEADERBOARD_SERVICE_URL=http://leaderboard-service-1:50052
+      - MINI_APP_URL=${MINI_APP_URL:-https://example.com/mini-app}
+      - WEBSOCKET_PORT=8080
+      - GRPC_POOL_SIZE=50
+      - INSTANCE_ID=bot-1
+      - LEADERBOARD_BROADCAST_INTERVAL_MS=5000
+      - RUST_LOG=info,bot_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9091
+    ports:
+      - "9091:9091"  
+    depends_on:
+      redis:
+        condition: service_healthy
+      game-service-1:
+        condition: service_healthy
+      leaderboard-service-1:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  bot-service-2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.bot-service
+    platform: linux/amd64  
+    container_name: clickgame-bot-2
+    environment:
+      - TELOXIDE_TOKEN=${TELOXIDE_TOKEN}
+      - ENABLE_TELEGRAM_POLLING=false  
+      - GAME_SERVICE_URL=http://game-service-2:50051
+      - LEADERBOARD_SERVICE_URL=http://leaderboard-service-1:50052
+      - MINI_APP_URL=${MINI_APP_URL:-https://example.com/mini-app}
+      - WEBSOCKET_PORT=8080
+      - GRPC_POOL_SIZE=50
+      - INSTANCE_ID=bot-2
+      - LEADERBOARD_BROADCAST_INTERVAL_MS=5000
+      - RUST_LOG=info,bot_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9091
+    depends_on:
+      redis:
+        condition: service_healthy
+      game-service-2:
+        condition: service_healthy
+      leaderboard-service-1:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  bot-service-3:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.bot-service
+    platform: linux/amd64  
+    container_name: clickgame-bot-3
+    environment:
+      - TELOXIDE_TOKEN=${TELOXIDE_TOKEN}
+      - ENABLE_TELEGRAM_POLLING=false  
+      - GAME_SERVICE_URL=http://game-service-3:50051
+      - LEADERBOARD_SERVICE_URL=http://leaderboard-service-2:50052
+      - MINI_APP_URL=${MINI_APP_URL:-https://example.com/mini-app}
+      - WEBSOCKET_PORT=8080
+      - GRPC_POOL_SIZE=50
+      - INSTANCE_ID=bot-3
+      - LEADERBOARD_BROADCAST_INTERVAL_MS=5000
+      - RUST_LOG=info,bot_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9091
+    depends_on:
+      redis:
+        condition: service_healthy
+      game-service-3:
+        condition: service_healthy
+      leaderboard-service-2:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  bot-service-4:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.bot-service
+    platform: linux/amd64  
+    container_name: clickgame-bot-4
+    environment:
+      - TELOXIDE_TOKEN=${TELOXIDE_TOKEN}
+      - ENABLE_TELEGRAM_POLLING=false  
+      - GAME_SERVICE_URL=http://game-service-1:50051
+      - LEADERBOARD_SERVICE_URL=http://leaderboard-service-2:50052
+      - MINI_APP_URL=${MINI_APP_URL:-https://example.com/mini-app}
+      - WEBSOCKET_PORT=8080
+      - GRPC_POOL_SIZE=50
+      - INSTANCE_ID=bot-4
+      - LEADERBOARD_BROADCAST_INTERVAL_MS=5000
+      - RUST_LOG=info,bot_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9091
+    depends_on:
+      redis:
+        condition: service_healthy
+      game-service-1:
+        condition: service_healthy
+      leaderboard-service-2:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  bot-service-5:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.bot-service
+    platform: linux/amd64  
+    container_name: clickgame-bot-5
+    environment:
+      - TELOXIDE_TOKEN=${TELOXIDE_TOKEN}
+      - ENABLE_TELEGRAM_POLLING=false  
+      - GAME_SERVICE_URL=http://game-service-2:50051
+      - LEADERBOARD_SERVICE_URL=http://leaderboard-service-2:50052
+      - MINI_APP_URL=${MINI_APP_URL:-https://example.com/mini-app}
+      - WEBSOCKET_PORT=8080
+      - GRPC_POOL_SIZE=50
+      - INSTANCE_ID=bot-5
+      - LEADERBOARD_BROADCAST_INTERVAL_MS=5000
+      - RUST_LOG=info,bot_service=debug
+      - JAEGER_ENDPOINT=http://jaeger:4317
+      - METRICS_PORT=9091
+    depends_on:
+      redis:
+        condition: service_healthy
+      game-service-2:
+        condition: service_healthy
+      leaderboard-service-2:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - clickgame-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    platform: linux/amd64
+    container_name: clickgame-jaeger
+    ports:
+      - "16686:16686"     
+      - "4317:4317"       
+      - "4318:4318"       
+      - "14250:14250"     
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - LOG_LEVEL=info
+      - SPAN_STORAGE_TYPE=memory
+      - MEMORY_MAX_TRACES=10000
+    networks:
+      - clickgame-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    platform: linux/amd64
+    container_name: clickgame-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+    networks:
+      - clickgame-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    platform: linux/amd64
+    container_name: clickgame-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana:/etc/grafana/provisioning:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - clickgame-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.64.0
+    platform: linux/amd64
+    container_name: clickgame-redis-exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis:6379
+    networks:
+      - clickgame-network
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.17.0
+    platform: linux/amd64
+    container_name: clickgame-postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:password@postgres:5432/clickgame?sslmode=disable
+    networks:
+      - clickgame-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+
+  nginx:
+    image: nginx:alpine
+    platform: linux/amd64 
+    container_name: clickgame-nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./mini-app/dist:/usr/share/nginx/html:ro
+    ports:
+      - "80:80"          
+      - "50051:50051"    
+      - "50052:50052"   
+    depends_on:
+      bot-service-1:
+        condition: service_healthy
+      bot-service-2:
+        condition: service_healthy
+      bot-service-3:
+        condition: service_healthy
+      bot-service-4:
+        condition: service_healthy
+      bot-service-5:
+        condition: service_healthy
+      game-service-1:
+        condition: service_healthy
+      game-service-2:
+        condition: service_healthy
+      game-service-3:
+        condition: service_healthy
+      leaderboard-service-1:
+        condition: service_healthy
+      leaderboard-service-2:
+        condition: service_healthy
+    networks:
+      - clickgame-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  clickgame-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16

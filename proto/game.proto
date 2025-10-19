@@ -1,0 +1,193 @@
+syntax = "proto3";
+
+package game;
+
+// Game Service - Handles core game logic
+service GameService {
+    // User management
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+    rpc GetUser(GetUserRequest) returns (GetUserResponse);
+    rpc UpdateUsername(UpdateUsernameRequest) returns (UpdateUsernameResponse);
+
+    // Click processing
+    rpc ProcessClick(ProcessClickRequest) returns (ProcessClickResponse);
+
+    // Session management
+    rpc StartSession(StartSessionRequest) returns (StartSessionResponse);
+    rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+    rpc EndSession(EndSessionRequest) returns (EndSessionResponse);
+    rpc GetSessionStats(GetSessionStatsRequest) returns (GetSessionStatsResponse);
+    rpc GetOrCreateSession(GetOrCreateSessionRequest) returns (GetOrCreateSessionResponse);
+}
+
+// Leaderboard Service - Read-optimized rankings
+service LeaderboardService {
+    rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
+    rpc GetUserRank(GetUserRankRequest) returns (GetUserRankResponse);
+    rpc GetGlobalStats(GetGlobalStatsRequest) returns (GetGlobalStatsResponse);
+    rpc UpdateUserScore(UpdateUserScoreRequest) returns (UpdateUserScoreResponse);
+}
+
+// ============ Game Service Messages ============
+
+message CreateUserRequest {
+    int64 telegram_id = 1;
+    string username = 2;
+}
+
+message CreateUserResponse {
+    string user_id = 1;
+    string username = 2;
+    int64 total_clicks = 3;
+    bool success = 4;
+    string message = 5;
+}
+
+message GetUserRequest {
+    int64 telegram_id = 1;
+}
+
+message GetUserResponse {
+    string user_id = 1;
+    int64 telegram_id = 2;
+    string username = 3;
+    int64 total_clicks = 4;
+    bool exists = 5;
+}
+
+message UpdateUsernameRequest {
+    string user_id = 1;
+    string new_username = 2;
+}
+
+message UpdateUsernameResponse {
+    bool success = 1;
+    string message = 2;
+    string username = 3;
+}
+
+message ProcessClickRequest {
+    string user_id = 1;
+    int64 telegram_id = 2;
+    string session_id = 3;
+    int64 timestamp = 4;
+    uint32 click_count = 5; 
+}
+
+message ProcessClickResponse {
+    int64 new_total = 1;
+    int32 current_rank = 2;
+    bool rate_limited = 3;
+    string message = 4;
+    bool success = 5;
+    int32 session_clicks = 6;
+}
+
+message StartSessionRequest {
+    string user_id = 1;
+    int64 chat_id = 2;
+    int32 message_id = 3;
+}
+
+message StartSessionResponse {
+    string session_id = 1;
+    bool success = 2;
+    int32 total_clicks = 3;
+    int64 started_at = 4;
+}
+
+message HeartbeatRequest {
+    string session_id = 1;
+}
+
+message HeartbeatResponse {
+    bool active = 1;
+}
+
+message EndSessionRequest {
+    string session_id = 1;
+}
+
+message EndSessionResponse {
+    bool success = 1;
+}
+
+message GetSessionStatsRequest {
+    string session_id = 1;
+}
+
+message GetSessionStatsResponse {
+    string session_id = 1;
+    string user_id = 2;
+    int64 chat_id = 3;
+    int32 message_id = 4;
+    int64 started_at = 5;
+    int64 ended_at = 6;
+    int64 last_heartbeat = 7;
+    int32 total_clicks = 8;
+    bool is_active = 9;
+    int32 duration_secs = 10;
+}
+
+message GetOrCreateSessionRequest {
+    string user_id = 1;
+    int64 chat_id = 2;
+    int32 message_id = 3;
+}
+
+message GetOrCreateSessionResponse {
+    string session_id = 1;
+    bool success = 2;
+    bool is_reconnection = 3;
+    int32 total_clicks = 4;
+    int64 started_at = 5;
+    int32 duration_secs = 6;
+}
+
+// ============ Leaderboard Service Messages ============
+
+message GetLeaderboardRequest {
+    int32 limit = 1; // Default 20
+    int32 offset = 2;
+}
+
+message GetLeaderboardResponse {
+    repeated LeaderboardEntry entries = 1;
+    int32 total_count = 2;
+}
+
+message LeaderboardEntry {
+    int32 rank = 1;
+    string username = 2;
+    int64 total_clicks = 3;
+    string user_id = 4;
+}
+
+message GetUserRankRequest {
+    string user_id = 1;
+}
+
+message GetUserRankResponse {
+    int32 rank = 1;
+    int64 total_clicks = 2;
+    bool found = 3;
+}
+
+message GetGlobalStatsRequest {}
+
+message GetGlobalStatsResponse {
+    int64 total_clicks = 1;
+    int64 total_users = 2;
+    int64 active_sessions = 3;
+}
+
+message UpdateUserScoreRequest {
+    string user_id = 1;
+    string username = 2;
+    int64 score = 3;
+}
+
+message UpdateUserScoreResponse {
+    bool success = 1;
+    int32 new_rank = 2;
+}

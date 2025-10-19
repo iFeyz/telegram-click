@@ -1,0 +1,59 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, user_id, chat_id, message_id, started_at, last_heartbeat, is_active\n            FROM sessions\n            WHERE user_id = $1\n            AND is_active = TRUE\n            AND last_heartbeat > NOW() - $2 * INTERVAL '1 second'\n            ORDER BY started_at DESC\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "chat_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "message_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "started_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "last_heartbeat",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_active",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "206a138931b66d206ed568b770143c149e30346beb81cc975b62f411c4654770"
+}

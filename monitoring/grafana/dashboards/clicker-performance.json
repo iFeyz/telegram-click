@@ -1,0 +1,250 @@
+{
+  "title": "Telegram Clicker - Performance Dashboard",
+  "tags": ["clicker", "performance", "bottlenecks"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Click Processing Latency (End-to-End)",
+      "type": "timeseries",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "rate(game_service_click_total_latency_sum[1m]) / rate(game_service_click_total_latency_count[1m]) * 1000",
+          "legendFormat": "{{instance}} - Avg Latency (ms)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": " Click Throughput (Clicks/sec)",
+      "type": "timeseries",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(game_service_click_success_total[1m]))",
+          "legendFormat": "Total Clicks/sec",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(game_service_click_success_total[1m])",
+          "legendFormat": "{{instance}}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "⚡ BOTTLENECK ANALYSIS: Latency Breakdown",
+      "type": "timeseries",
+      "gridPos": {"x": 0, "y": 8, "w": 24, "h": 10},
+      "targets": [
+        {
+          "expr": "rate(game_service_rate_limit_check_sum[1m]) / rate(game_service_rate_limit_check_count[1m]) * 1000",
+          "legendFormat": "Rate Limit Check (ms)",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(game_service_rate_limit_lock_wait_sum[1m]) / rate(game_service_rate_limit_lock_wait_count[1m]) * 1000",
+          "legendFormat": "Rate Limit Lock Wait (ms)",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(game_service_click_accumulate_sum[1m]) / rate(game_service_click_accumulate_count[1m]) * 1000",
+          "legendFormat": "Redis Accumulate (ms)",
+          "refId": "C"
+        },
+        {
+          "expr": "rate(game_service_session_increment_sum[1m]) / rate(game_service_session_increment_count[1m]) * 1000",
+          "legendFormat": "Session Increment (ms)",
+          "refId": "D"
+        },
+        {
+          "expr": "rate(game_service_session_get_stats_sum[1m]) / rate(game_service_session_get_stats_count[1m]) * 1000",
+          "legendFormat": "Session Get Stats (ms)",
+          "refId": "E"
+        },
+        {
+          "expr": "rate(game_service_user_get_by_id_sum[1m]) / rate(game_service_user_get_by_id_count[1m]) * 1000",
+          "legendFormat": "User Fetch DB (ms)",
+          "refId": "F"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "stacking": {"mode": "normal"}
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": " Rate Limiter Performance (Redis)",
+      "type": "stat",
+      "gridPos": {"x": 0, "y": 18, "w": 6, "h": 4},
+      "targets": [
+        {
+          "expr": "rate(game_service_rate_limit_check_sum[1m]) / rate(game_service_rate_limit_check_count[1m]) * 1000",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 5, "color": "yellow"},
+              {"value": 10, "color": "red"}
+            ]
+          },
+          "unit": "ms"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": " Redis Click Accumulator Latency",
+      "type": "stat",
+      "gridPos": {"x": 6, "y": 18, "w": 6, "h": 4},
+      "targets": [
+        {
+          "expr": "rate(game_service_click_accumulate_sum[1m]) / rate(game_service_click_accumulate_count[1m]) * 1000",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 2, "color": "yellow"},
+              {"value": 5, "color": "red"}
+            ]
+          },
+          "unit": "ms"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": " Database Query Latency (User Fetch)",
+      "type": "stat",
+      "gridPos": {"x": 12, "y": 18, "w": 6, "h": 4},
+      "targets": [
+        {
+          "expr": "rate(game_service_user_get_by_id_sum[1m]) / rate(game_service_user_get_by_id_count[1m]) * 1000",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 10, "color": "yellow"},
+              {"value": 50, "color": "red"}
+            ]
+          },
+          "unit": "ms"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": " Session Operations Latency",
+      "type": "stat",
+      "gridPos": {"x": 18, "y": 18, "w": 6, "h": 4},
+      "targets": [
+        {
+          "expr": "(rate(game_service_session_increment_sum[1m]) + rate(game_service_session_get_stats_sum[1m])) / (rate(game_service_session_increment_count[1m]) + rate(game_service_session_get_stats_count[1m])) * 1000",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 10, "color": "yellow"},
+              {"value": 20, "color": "red"}
+            ]
+          },
+          "unit": "ms"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Click Success Rate",
+      "type": "gauge",
+      "gridPos": {"x": 0, "y": 22, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(game_service_click_success_total[1m])) / (sum(rate(game_service_click_requests_total[1m])) + 0.001) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "red"},
+              {"value": 95, "color": "yellow"},
+              {"value": 99, "color": "green"}
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": " System Capacity vs Target (50k clicks/sec)",
+      "type": "gauge",
+      "gridPos": {"x": 12, "y": 22, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(game_service_click_success_total[1m])) / 50000 * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "red"},
+              {"value": 50, "color": "yellow"},
+              {"value": 100, "color": "green"}
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 200
+        }
+      }
+    }
+  ]
+}

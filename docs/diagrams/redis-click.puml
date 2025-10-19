@@ -1,0 +1,81 @@
+@startuml click-flow-simple
+title Simple Click Flow Explanation
+
+skinparam backgroundColor #FEFEFE
+skinparam handwritten false
+
+actor "User" as user
+participant "Browser\n(React App)" as browser
+participant "WebSocket\nServer" as ws
+participant "Game\nService" as game
+database "Redis\n(Temporary)" as redis
+database "PostgreSQL\n(Permanent)" as db
+
+== User Clicks ==
+
+user -> browser: **Click Bitcoin**\n(tap tap tap!)
+activate browser
+
+browser -> browser: **Collect clicks locally**\n- Wait 2 seconds OR\n- Collect 50 clicks\n(reduces network traffic)
+
+browser -> ws: **Send batch**\nWebSocket: "I have 50 clicks!"
+deactivate browser
+activate ws
+
+ws -> game: **Forward to Game Service**\ngRPC: ProcessClick(user_id, 50)
+activate game
+
+== Fast Processing ==
+
+game -> redis: **1. Check rate limit**\nAm I clicking too fast?\n(max 10 clicks/second)
+activate redis
+redis --> game: ✓ OK, not too fast
+deactivate redis
+
+game -> redis: **2. Add to pending**\nHINCRBY clicks:pending\nuser_id +50\n(temporary storage)
+activate redis
+redis --> game: ✓ Saved: 1,250 pending
+deactivate redis
+
+game --> ws: **Response**\nSuccess! New total: 12,450
+deactivate game
+
+ws -> browser: **Update score**\nWebSocket: "You now have 12,450 clicks"
+deactivate ws
+activate browser
+
+browser -> browser: **Animate UI**\n- Update counter\n- Show +50 animation
+deactivate browser
+
+== Background: Save to Database (Every 1 second) ==
+
+game -> game: **Timer: 1000ms elapsed**
+activate game
+
+game -> redis: **Get all pending clicks**\nHGETALL clicks:pending
+activate redis
+redis --> game: user1: 150\nuser2: 200\nuser3: 100
+deactivate redis
+
+game -> db: **Batch update**\nUPDATE users\nSET total_clicks = \n  total_clicks + pending\nWHERE user_id IN (...)
+activate db
+db --> game: ✓ Updated 3 users
+deactivate db
+
+game -> redis: **Clear pending**\nDEL clicks:pending
+activate redis
+redis --> game: ✓ Cleared
+deactivate redis
+
+deactivate game
+
+note over user, db
+  **Summary:**
+  1. User clicks → Batched in browser (2s)
+  2. Send to server → Stored in Redis (fast memory)
+  3. Background task → Save to PostgreSQL (every 1s)
+
+  **Result: Sub-100ms response time!**
+end note
+
+@enduml
