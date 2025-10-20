@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml">
+      <package file="$PROJECT_DIR$/bot-service">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/game-service">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/leaderboard-service">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$/shared">
+        <feature name="default" enabled="true" />
+      </package>
+    </cargoProject>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="52626905-22e7-4412-90d6-f6b8cc2ba148" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/Dockerfile.leaderboard-service" beforeDir="false" afterPath="$PROJECT_DIR$/docker/Dockerfile.leaderboard-service" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/bun.lock" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/bun.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/components/ClickButton.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/components/Leaderboard.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/components/Stats.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/src/components/Stats.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/components/ui/button.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/components/ui/card.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/components/ui/form.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/components/ui/input.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/components/ui/label.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/components/ui/select.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/frontend.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/src/frontend.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/hooks/useTelegram.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/src/hooks/useTelegram.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/hooks/useWebSocket.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/src/hooks/useWebSocket.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/src/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/src/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/src/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/lib/utils.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/logo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/react.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/src/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/src/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-app/styles/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/mini-app/styles/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proto/game.proto" beforeDir="false" afterPath="$PROJECT_DIR$/proto/game.proto" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="RsBuildProfile:test" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "iFeyz"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/iFeyz/telegram-click.git",
+    "accountId": "8c61d7c3-a3c8-4e6d-a102-ac27296c517e"
+  }
+}]]></component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="true" />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="lUUuXgIi" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="34CVSRJHmtYy5AdIYleMXDcv5iX" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Cargo.Test test_record_click_success.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "main",
+    "go.import.settings.migrated": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/arthur/telegram-tech",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "org.rust.disableDetachedFileInspection/Users/arthur/telegram-tech/game-service/src/stream/publisher.rs": "true",
+    "settings.editor.selected.configurable": "copyright.profiles",
+    "show.migrate.to.gradle.popup": "false",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
+    ]
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="Test test_record_click_success" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="buildProfileId" value="test" />
+      <option name="command" value="test --package game-service --test test_click_repository test_record_click_success -- --ignored --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Cargo.Test test_record_click_success" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$PROJECT_DIR$/../.cargo/bin" />
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="52626905-22e7-4412-90d6-f6b8cc2ba148" name="Changes" comment="" />
+      <created>1760717540437</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1760717540437</updated>
+      <workItem from="1760717904094" duration="10000" />
+      <workItem from="1760717922305" duration="22483000" />
+      <workItem from="1760821008202" duration="1787000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>false</integration-enabled>
+    <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
